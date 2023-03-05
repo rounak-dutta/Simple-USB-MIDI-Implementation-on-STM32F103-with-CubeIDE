@@ -88,8 +88,8 @@ int main(void)
   midiNoteOn[2] = 0x40;	// MIDI Note Value: here for demo purpose lets take 0x40 or 64
   midiNoteOn[3] = 0x7F; // MIDI Note Velocity: Range 0 to 127, here Max value is used for demo
 
-  midiNoteOff[0] = 0x08;	// 0--> Cable Number 0, values can be 0 to F, 8 --> MIDI Note On Message
-  midiNoteOff[1] = 0x80;	// 8--> MIDI Note On, 0--> Channel Num. , values can be 0 to F
+  midiNoteOff[0] = 0x08;	// 0--> Cable Number 0, values can be 0 to F, 8 --> MIDI Note Off Message
+  midiNoteOff[1] = 0x80;	// 8--> MIDI Note Off, 0--> Channel Num. , values can be 0 to F
   midiNoteOff[2] = 0x40;	// MIDI Note Value: here for demo purpose lets take 0x40 or 64
   midiNoteOff[3] = 0x7F; // MIDI Note Velocity: Range 0 to 127, here Max value is used for demo
 
