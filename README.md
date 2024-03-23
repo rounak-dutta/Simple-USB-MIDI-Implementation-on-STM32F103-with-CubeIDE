@@ -13,3 +13,5 @@ References:
   https://www.midi.org/specifications-old/item/table-1-summary-of-midi-message
   https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-status-bytes
   https://github.com/essigt/SpareFaders
+
+**Note:** I have added an example-code/ pseudo-code for reading keyboard-matrix data and to send the corresponding data to PC, as there were few comments on YouTube regarding the same. The example is in the file "KeyboardRead_and_MidiDataSend_Example.txt".
