@@ -1,4 +1,5 @@
 // Keyboard Matrix Read & USB-Data-Send Pseudo Code
+// Note: Please use "diode-type keyboard-matrix" to get proper polyphony and also to avoid any damage to the GPIO pins of the uC, as the GPIO-out pins have a chance of getting shorted in case of simultaneous key-presses.
 
 // Array for Velocity-values (Assuming 16-keys in a 4x4 matrix)
 static uint8_t kbd_val_array[16];
