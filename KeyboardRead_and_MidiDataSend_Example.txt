@@ -1,0 +1,123 @@
+// Keyboard Matrix Read & USB-Data-Send Pseudo Code
+
+// Array for Velocity-values (Assuming 16-keys in a 4x4 matrix)
+static uint8_t kbd_val_array[16];
+
+// Array for Key-On/Off status (helps to avoid sending same key-on/off data repeatedly) (Assuming 16-Keys in a 4x4 matrix)
+static uint8_t kbd_status_array[16];
+
+// MIDI-Data-Array
+uint8_t midiNoteData[4];
+
+
+// Function to initialize the keyboard related pins and arrays
+void initKBD()
+{
+	// Ex.: 4 select-pins as follows and there will be 4 read-pins 
+	HAL_GPIO_WritePin(GPIOB, S0_Pin|S1_Pin|S2_Pin|S3_Pin, GPIO_PIN_RESET);
+	int i=0;
+	for (i=0;i<16;i++)
+	{
+		kbd_status_array[i]=0;
+		kbd_val_array[i]=0;
+	}
+}
+
+// Go through the Keyboard-Matrix and Read the key-values, i.e., pressed or un-pressed state
+void scanKBD()
+{
+	// S0-line is selected
+	HAL_GPIO_WritePin(GPIOB, S1_Pin|S2_Pin|S3_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB, S0_Pin, GPIO_PIN_SET);
+	// Key Debounce Delay
+	HAL_Delay(5);
+	kbd_val_array[0] = HAL_GPIO_ReadPin(GPIOB, R0_Pin);
+	kbd_val_array[1] = HAL_GPIO_ReadPin(GPIOB, R1_Pin);
+	kbd_val_array[2] = HAL_GPIO_ReadPin(GPIOB, R2_Pin);
+	kbd_val_array[3] = HAL_GPIO_ReadPin(GPIOB, R3_Pin);
+
+	// S1-line is selected
+	HAL_GPIO_WritePin(GPIOB, S0_Pin|S2_Pin|S3_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB, S1_Pin, GPIO_PIN_SET);
+	// Key Debounce Delay
+	HAL_Delay(5);
+	kbd_val_array[4] = HAL_GPIO_ReadPin(GPIOB, R0_Pin);
+	kbd_val_array[5] = HAL_GPIO_ReadPin(GPIOB, R1_Pin);
+	kbd_val_array[6] = HAL_GPIO_ReadPin(GPIOB, R2_Pin);
+	kbd_val_array[7] = HAL_GPIO_ReadPin(GPIOB, R3_Pin);
+
+	// S2-line is selected
+	HAL_GPIO_WritePin(GPIOB, S0_Pin|S1_Pin|S3_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB, S2_Pin, GPIO_PIN_SET);
+	// Key Debounce Delay
+	HAL_Delay(5);
+	kbd_val_array[8] = HAL_GPIO_ReadPin(GPIOB, R0_Pin);
+	kbd_val_array[9] = HAL_GPIO_ReadPin(GPIOB, R1_Pin);
+	kbd_val_array[10] = HAL_GPIO_ReadPin(GPIOB, R2_Pin);
+	kbd_val_array[11] = HAL_GPIO_ReadPin(GPIOB, R3_Pin);
+
+	// S3-line is selected
+	HAL_GPIO_WritePin(GPIOB, S0_Pin|S1_Pin|S2_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB, S3_Pin, GPIO_PIN_SET);
+	// Key Debounce Delay
+	HAL_Delay(5);
+	kbd_val_array[12] = HAL_GPIO_ReadPin(GPIOB, R0_Pin);
+	kbd_val_array[13] = HAL_GPIO_ReadPin(GPIOB, R1_Pin);
+	kbd_val_array[14] = HAL_GPIO_ReadPin(GPIOB, R2_Pin);
+	kbd_val_array[15] = HAL_GPIO_ReadPin(GPIOB, R3_Pin);
+}
+
+int main(void)
+{
+	// Initialize the keyboard array to 0-state
+	initKBD();
+
+	// Keyboard-note-index
+	int i=0;
+
+	// 4th Octave is selected
+	int octave_state=4;
+
+	// transpose is 0
+	int transpose_state=0;
+
+	// Velocity of the key=127 (max-value)
+	uint8_t kbd_velocity=127;
+
+	// Main-While-Loop
+	while (1)
+  	{
+		// Scan the Keyboard Matrix and set the Key-Pressed-Values
+		scanKBD();
+		if (kbd_val_array[i] == 1 && kbd_status_array[i] == 0)
+		{
+			// Set the Key-Status to 1, i.e., pressed
+			kbd_status_array[i] = 1;
+
+			// Prepare the MIDI-Data-Array
+			midiNoteData[0] = 0x09; // CI= Virtual Channel 1 & CIN=Note On
+			midiNoteData[1] = 0x90; // 9=Note On / 0=Channel 0
+			midiNoteData[2] = i + octave_state*12 + transpose_state; // Note-Number
+			midiNoteData[3] = kbd_velocity;	// Note-Velocity-Value
+			
+			// Send the MIDI-Data to PC
+			while (((USBD_HID_HandleTypeDef *) hUsbDeviceFS.pClassData)->state == HID_BUSY) {}
+			USBD_HID_SendReport(&hUsbDeviceFS, &midiNoteData, 4);
+		}
+		if (kbd_val_array[i] == 0 && kbd_status_array[i] == 1)
+		{
+			// Set the Key-Status to 1, i.e., pressed
+			kbd_status_array[i] = 0;
+
+			// Prepare the MIDI-Data-Array
+			midiNoteData[0] = 0x08; // CI= Virtual Channel 1 & CIN=Note Off
+			midiNoteData[1] = 0x80; // 9=Note Off / 0=Channel 0
+			midiNoteData[2] = i + octave_state*12 + transpose_state; // Note-Number
+			midiNoteData[3] = kbd_velocity;	// Note-Velocity-Value
+
+			// Send the MIDI-Data to PC
+			while (((USBD_HID_HandleTypeDef *) hUsbDeviceFS.pClassData)->state == HID_BUSY) {}
+			USBD_HID_SendReport(&hUsbDeviceFS, &midiNoteData, 4);
+		}
+	}
+}
