@@ -14,4 +14,4 @@ References:
   https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-status-bytes
   https://github.com/essigt/SpareFaders
 
-**Note:** I have added an example-code/ pseudo-code for reading keyboard-matrix data and to send the corresponding data to PC, as there were few comments on YouTube regarding the same. The example is in the file "KeyboardRead_and_MidiDataSend_Example.txt".
+**Note:** I have added an example-code/ pseudo-code for reading keyboard-matrix data and to send the corresponding data to PC, as there were few comments on YouTube regarding the same. The example is in the file "KeyboardRead_and_MidiDataSend_Example.txt". **Important:** Please use diode-type keyboard-matrix to get proper polyphony and also to avoid any damage to the GPIO pins of the uC, as the GPIO-out pins have a chance of getting shorted in case of simultaneous key-presses.
